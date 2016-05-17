@@ -14,8 +14,7 @@ $ bin/rshell
 
 ##Known Bugs
 
-* `echo "hello"` does not produce `"hello"` as the original bash terminal does. It produces `"hello"`.
-* The `cd` function does not appear to work: e.g. `cd ..`, `cd folder1`, etc.
+* `echo "hello"` does not produce `hello` as the original bash terminal does. It produces `"hello"`.
 
 
 If there are any additional bugs discovered please feel free to let us know to further improve this program. Thank you!
