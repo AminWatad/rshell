@@ -11,10 +11,14 @@ $ git checkout hw2
 $ make
 $ bin/rshell
 ```
+##Limitations
+* The program handles a hostname up to 29 characters.
+* The program handles a username up to 19 characters.
+* The user can enter up to 40 words command.
 
 ##Known Bugs
 
 * `echo "hello"` does not produce `hello` as the original bash terminal does. It produces `"hello"`.
-
+* If the user didn't add a space between the command and the comment `#`, the program wouldn't comments the rest of the line.
 
 If there are any additional bugs discovered please feel free to let us know to further improve this program. Thank you!
