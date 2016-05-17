@@ -8,26 +8,13 @@ g++ main.cpp -o rshell
 echo ""
 echo "Testing comment commands now:"
 
-a="ls; #comment at end"
-b="ls #comment in middle && echo hello"
-c="#comment in front ls && echo hello;"
-d="echo hello#comment disrupting World"
-e="errortest && #comment echo hello"
 
-#echo "Testing 'ls; #comment at end':"
-#echo "ls; exit; #comment at end" | ./a.out
-#echo "Testing '$b':"
+echo "Testing 'ls; #comment at end':"
+echo "ls; exit; #comment at end" | ./a.out
 
-echo "echo hello #comment" & echo "exit" | ./rshell
+echo "Testing '':"
 
-	
-#echo "$b" | ./a.out
-#echo "Testing '$c':"
-#echo "$c" | ./a.out
-#echo "Testing '$d':"
-#echo "$d" | ./a.out
-#echo "Testing '$e':"
-#echo "$e" | ./a.out
+echo "echo hello #comment" & echo "exit" | ./rshell	
 
 echo "End testing comment commands."
 echo ""
