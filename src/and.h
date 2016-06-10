@@ -21,13 +21,17 @@ class And: public Base{
 		void execute(){ //if child1 succeeds, child2 is executed, else child2
                         //is not executed, and status is changed to false
 
+            child1->execute();
+
 			if (child1->getSuccess())
 			{
+                //if child1 succeeds, child 2 is executed
                 if (child2->getExecutable() != "exit") {
 				    child2->execute();
                     this->setSuccess(child2->getSuccess());
                 }
                 else {
+                    child2->execute();
                     this->setSuccess(child1->getSuccess());
                 }
 			}
@@ -41,7 +45,12 @@ class And: public Base{
 			
 		}
         string getExecutable() {
+            //in case the command was exit
             return child2->getExecutable();
+        }
+
+        bool getChildSuccess() {
+            return child2->getSuccess();
         }
 
 

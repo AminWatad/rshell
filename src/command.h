@@ -6,6 +6,7 @@
 #include <string>
 #include <string.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/wait.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -21,12 +22,16 @@ class Command: public Base{
 		Command(string input){ //constructor
 		    executable = input;
             this->setSuccess(false); //in default success is false
+            this->setExecuted(false);
             return;
 		}
         void execute() {
             //executes the cmd, and changes success depending on status
-            if(this->cmdExecute() != 2) {this->setSuccess(false);}
-            else {this->setSuccess(true);}
+            if (!this->getExecuted()) {
+                if (this->cmdExecute() != 2) {this->setSuccess(false);}
+                else {this->setSuccess(true);}
+                this->setExecuted(true);
+            }
         }
 
 		int cmdExecute() {
@@ -47,30 +52,109 @@ class Command: public Base{
                 cmds[i] = cstr;
             }
             cmds[counter] = NULL; //adds the NULL char for the array
-            pid_t c;
-            int status; //status of the execution
-            c = fork(); //creates a fork process
-            if (c == 0) { //if fork is the child, execute
-                 status = 1;
-                 execvp(cmds[0], cmds);
-                 perror("execvp");  //if execvp returns, exit
-                 exit(errno);
-                 
-            }
-            else if (c == -1){ //if fork couldn't be created
-                 perror("fork"); 
-                 return -1;
-            }
-            else  { //if pid > 0 means fork is the parent so we wait for the ch
-                if( waitpid(c, &status, WUNTRACED | WCONTINUED) == -1) {
-                    perror("waitpid"); //in case waitpid failed
-                    return -1;
+            char testing[] = "test";
+            char exitCheck[] = "exit";
+            string option;
+            //if the command was exit, nothing is done
+            if (strcmp(cmds[0], exitCheck) == 0) return 2;
+            //a special case to handle test command
+            else if (strcmp(cmds[0],testing) == 0) {
+                //these conditions set the success depending on the option
+                //passed by the user
+                if (counter < 3) option = "-e";
+                else option = cmds[1];
+                struct stat buf;
+                if (stat(cmds[counter - 1], &buf) == -1) {
+                    cout << "(False)" << endl;
+                    return 1;
+                }
+                if (option == "-e") { 
+                    cout << "(True)" << endl;
+                    return 2;
+                }
+                else if (option == "-f") {
+                    if (S_ISREG(buf.st_mode)) {
+                        cout << "(True)" << endl;
+                        return 2;
+                    }
+                    else {
+                        cout << "(False)" << endl;
+                        return 1;
+                    }
+                }
+                else if (option == "-d") {
+                    if (S_ISDIR(buf.st_mode)) {
+                        cout << "(True)" << endl;
+                        return 2;
+                    }
+                    else {
+                        cout << "(False)" << endl;
+                        return 1;
+                    }
                 }
             }
+            //handles the test command between [ ]
+            else if (strncmp(cmds[0],"[",1) == 0) {
+                //if no option was passed, -e is set by default
+                //and then we set success depending on the option
+                if (counter < 4) option = "-e";
+                else option = cmds[1];
+                struct stat buf; //stat returns information about path
+                if (stat(cmds[counter - 2], &buf) == -1) {
+                    cout << "(False)" << endl;
+                    return 1;
+                }
+                if (option == "-e") { 
+                    cout << "(True)" << endl;
+                    return 2;
+                }
+                else if (option == "-f") {
+                    if (S_ISREG(buf.st_mode)) { 
+                        cout << "(True)" << endl;
+                        return 2;
+                    }
+                    else {
+                        cout << "(False)" << endl;
+                        return 1;
+                    }
+                }
+                else if (option == "-d") {
+                    if (S_ISDIR(buf.st_mode)) { 
+                        cout << "(True)" << endl;
+                        return 2;
+                    }
+                    else { 
+                        cout << "(False)" << endl;
+                        return 1;
+                    }
+                }
+                
+            }
+            else{
+                pid_t c;
+                int status; //status of the execution
+                c = fork(); //creates a fork process
+                if (c == 0) { //if fork is the child, execute
+                     status = 1;
+                    execvp(cmds[0], cmds);
+                    perror("execvp");  //if execvp returns, exit
+                    exit(errno);  
+                }
+                else if (c == -1){ //if fork couldn't be created
+                    perror("fork"); 
+                    return -1;
+                }
+                else  { //if pid > 0 means fork is the parent so we wait for the ch
+                    if( waitpid(c, &status, WUNTRACED | WCONTINUED) == -1) {
+                        perror("waitpid"); //in case waitpid failed
+                        return -1;
+                    }
+                }   
             
-            if (WEXITSTATUS(status) == 0) { //if exit status is 0, everything 
+                if (WEXITSTATUS(status) == 0) { //if exit status is 0, everything 
                                             // went okay
-                return 2; //success
+                    return 2; //success
+                }
             }
             return 0;
 
@@ -80,5 +164,9 @@ class Command: public Base{
 			return executable;
 		
 		}
+
+        bool getChildSuccess() {
+            return this->getSuccess();
+        }
 };
 #endif

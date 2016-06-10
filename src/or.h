@@ -26,13 +26,14 @@ class Or: public Base {
 				    this->setSuccess(child2->getSuccess());	
                 }
                 else {
+                    child2->execute();
                     this->setSuccess(true);
                 }
 			}
 
 			else
 			{
-				this->setSuccess(false);
+				this->setSuccess(true);
 				child2->setSuccess(false);
 
 			}
@@ -41,6 +42,10 @@ class Or: public Base {
 
         string getExecutable() {
             return child2->getExecutable();
+        }
+
+        bool getChildSuccess() {
+            return child2->getSuccess();
         }
 };
 #endif
